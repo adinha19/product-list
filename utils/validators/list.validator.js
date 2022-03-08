@@ -8,6 +8,7 @@ const listValidator = (req, res, next) => {
 
         return next(error)
     }
+    //return error if no title
 
     let validateProductName = false
     let validateProductSum = false
@@ -24,9 +25,10 @@ const listValidator = (req, res, next) => {
             }
         }
     }
-
-    if (validateProductSum) {
-        let error = errorHandler(res, 400, 'Product sum should be a number')
+    //if one of products doesn't have name or sum, or if sum is not a number, return errors
+    if (validateProductName || validateProductSum) {
+        let error = errorHandler(res, 400, validateProductName && "Product name is required" ||
+            validateProductSum && 'Product sum is required and should be a number')
 
         return next(error)
     }

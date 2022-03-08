@@ -10,17 +10,19 @@ const signup = async (req, res, next) => {
 
     const { email, password } = req.body;
 
-    /* Check if user with entered email already exists */
     let isEmailExisting = await User.findOne({ email });
-
+    // check if user with entered email already exists
+    
     if (isEmailExisting) {
         let error = errorHandler(res, 409, "User with that email already exists!");
 
         return next(error);
     }
+    //if exists, return error
 
     let salt = bcrypt.genSaltSync(10);
     let hashedPassword = await bcrypt.hash(password, salt);
+    //salt and hash the password
 
     await User.create({
         email,
@@ -28,6 +30,7 @@ const signup = async (req, res, next) => {
     });
 
     res.status(200).json({ success: true, user: email });
+    //save new user
 }
 
 const login = async (req, res, next) => {
@@ -42,6 +45,7 @@ const login = async (req, res, next) => {
     }
 
     let compare = await bcrypt.compare(password, user.password)
+    //compare password hashes
 
     if (compare) {
         const payload = {
@@ -61,6 +65,7 @@ const login = async (req, res, next) => {
                 });
             }
         );
+    //return jwt if compare is true
     } else {
         let error = errorHandler(res, 401, "Invalid login")
 
@@ -74,6 +79,7 @@ const changePassword = async (req, res, next) => {
     let { password } = req.body
 
     let hashedPassword = await bcrypt.hash(password, 12);
+    //hash password
 
     await User.findByIdAndUpdate(userId, { password: hashedPassword })
         .then((user) => res.status(200).json({ success: true, user: user.email }))
@@ -82,6 +88,7 @@ const changePassword = async (req, res, next) => {
 
             return next(error)
         })
+    //save new password
 }
 
 exports.signup = signup;

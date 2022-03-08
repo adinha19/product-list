@@ -4,6 +4,8 @@ const listController = require('../controllers/list.controller')
 const passport = require('passport')
 const { listValidator } = require('../utils/validators/list.validator')
 
+//all routes are protected, listValidator to check inputs
+
 router.get("/:startDate/:endDate", passport.authenticate('jwt', { session: false }), listController.getProductsByDate)
 
 router.post("/", listValidator, passport.authenticate('jwt', { session: false }), listController.createList)

@@ -12,6 +12,7 @@ const createList = async (req, res, next) => {
 
         return next(error);
     }
+    //if list with same title exists, return error
 
     const list = new List({
         title,
@@ -26,37 +27,51 @@ const createList = async (req, res, next) => {
 
             return next(error);
         })
+    //create list
 }
 
 const editList = async (req, res, next) => {
     const id = req.params.id
     const { title, products } = req.body
-
+    const user = req.user._id
+    console.log(user)
     let isExistingTitle = await List.findOne({ title });
+    if (isExistingTitle) {
+        if (isExistingTitle._id != id) {
+            let error = errorHandler(res, 409, "List with that title already exists!");
 
-    if (!isExistingTitle) {
-        let error = errorHandler(res, 400, "No such list");
-
-        return next(error);
+            return next(error);
+        }
     }
+    //if id of list that was found is not the same as current list id (incase we didnt changed title),
+    //list with different id exists, return error 
+    let list = await List.findById(id)
+    console.log(list.creator)
+    console.log(user !== list.creator)
 
-    if (isExistingTitle._id != id) {
-        let error = errorHandler(res, 409, "List with that title already exists!");
-
-        return next(error);
+    if (list) {
+        if (!list.creator.equals(user)) {
+            let error = errorHandler(res, 409, "This is not your list");
+            return next(error);
+        }
     }
+    //if list exists and if creator is not equal to user, return error
+    list.title = title
+    list.products = products
 
-    await List.findByIdAndUpdate(id, { title: title, products: products })
-        .then(re => res.json(re))
+    await list.save()
+        .then(res.json(list))
         .catch(() => {
             let error = errorHandler(res, 400, "No such list");
 
             return next(error);
         })
+    //update list
 }
 
 const deleteList = async (req, res, next) => {
     const id = req.params.id
+    //find list by id
 
     await List.findByIdAndDelete(id)
         .then(res.json({ success: true }))
@@ -65,6 +80,7 @@ const deleteList = async (req, res, next) => {
 
             return next(error);
         })
+    //delete list
 }
 
 const getProductsByDate = async (req, res, next) => {
@@ -79,7 +95,7 @@ const getProductsByDate = async (req, res, next) => {
         //get fields we need, without id
         { $unwind: "$products" },
         //unwind arrays so we now have one array with all elements
-        { $group: { _id: "$products.name", total: { $sum: "$products.sum"} } }
+        { $group: { _id: "$products.name", total: { $sum: "$products.sum" } } }
         //group elements if product name is same, sum their sum
     ])
         .then(response => res.json(response))
