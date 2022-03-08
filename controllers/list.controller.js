@@ -34,7 +34,7 @@ const editList = async (req, res, next) => {
     const id = req.params.id
     const { title, products } = req.body
     const user = req.user._id
-    console.log(user)
+
     let isExistingTitle = await List.findOne({ title });
     if (isExistingTitle) {
         if (isExistingTitle._id != id) {
@@ -45,25 +45,17 @@ const editList = async (req, res, next) => {
     }
     //if id of list that was found is not the same as current list id (incase we didnt changed title),
     //list with different id exists, return error 
-    let list = await List.findById(id)
-    console.log(list.creator)
-    console.log(user !== list.creator)
-
-    if (list) {
-        if (!list.creator.equals(user)) {
-            let error = errorHandler(res, 409, "This is not your list");
-            return next(error);
-        }
-    }
-    //if list exists and if creator is not equal to user, return error
-    list.title = title
-    list.products = products
-
-    await list.save()
-        .then(res.json(list))
+    await List.findOneAndUpdate({ id: id, creator: user })
+        .then(response => {
+            if (response) {
+                res.json(response)
+            } else {
+                let error = errorHandler(res, 400, "This is not your list");
+                return next(error);
+            }
+        })
         .catch(() => {
-            let error = errorHandler(res, 400, "No such list");
-
+            let error = errorHandler(res, 400, "Can't edit list at the moment");
             return next(error);
         })
     //update list
@@ -72,11 +64,12 @@ const editList = async (req, res, next) => {
 const deleteList = async (req, res, next) => {
     const id = req.params.id
     //find list by id
+    let userId = req.user._id
 
-    await List.findByIdAndDelete(id)
-        .then(res.json({ success: true }))
+    await List.findOneAndDelete({ id: id, creator: userId })
+        .then(response => res.json(response))
         .catch(() => {
-            let error = errorHandler(res, 400, "No such list");
+            let error = errorHandler(res, 400, "Can't delete list");
 
             return next(error);
         })

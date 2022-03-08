@@ -4,8 +4,8 @@ To Login, send POST request to http://localhost:5000/user/login/ , with your ema
 To change password, send PUT request to http://localhost:5000/user/change-password with JWT in header (route is protected, user id is extracted out of JWT), with new password. 
 
 To create list send POST request to http://localhost:5000/list/ (again, route is protected, send JWT in headers). Title is required, products should be empty array, or array of objects with name and sum.  
-To edit list send POST request to http://localhost:5000/list/ (again, route is protected, send JWT in headers). Title is required, products should be empty array, or array of objects with name and sum.  
-To get list of products for specific dates, send GET request to http://localhost:5000/list/startDate/endDate. Dates should be in yyyy-mm-dd format.
+To edit list send PUT request to http://localhost:5000/list/ (again, route is protected, send JWT in headers). Title is required, products should be empty array, or array of objects with name and sum.  
+To get list of products for specific dates, send GET request to http://localhost:5000/list/startDate/endDate. Dates should be in yyyy-mm-dd format.  
 To delete the list, send DELETE request to http://localhost:5000/list/:id (id of list).  
   
 ## Application's main features: 
