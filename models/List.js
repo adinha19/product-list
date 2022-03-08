@@ -4,11 +4,11 @@ exports.List = mongoose.model(
     "List",
     new mongoose.Schema(
         {
-            title: { type: String, unique: true, required: true },
+            title: { type: String },
             creator: { type: mongoose.Types.ObjectId, ref: "User" },
             products: [{
-                name: { type: String, required: true },
-                sum: { type: Number, required: true }
+                name: { type: String },
+                sum: { type: Number }
             }]
         },
         {

@@ -1,12 +1,12 @@
 const { User } = require("../models/User");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require('jsonwebtoken');
 const { errorHandler } = require("../utils/errorHandler");
 require('dotenv').config();
 
 const secret = process.env.JWT_SECRET
 
-const signup = async (req, res) => {
+const signup = async (req, res, next) => {
 
     const { email, password } = req.body;
 
@@ -19,7 +19,8 @@ const signup = async (req, res) => {
         return next(error);
     }
 
-    let hashedPassword = await bcrypt.hash(password, 12);
+    let salt = bcrypt.genSaltSync(10);
+    let hashedPassword = await bcrypt.hash(password, salt);
 
     await User.create({
         email,

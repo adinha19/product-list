@@ -8,7 +8,7 @@ const createList = async (req, res, next) => {
 
     let isExistingTitle = await List.findOne({ title });
     if (isExistingTitle) {
-        let error = errorHandler(res, 409, "List with that title already exists!");
+        let error = errorHandler(res, 400, "List with that title already exists!");
 
         return next(error);
     }
@@ -22,7 +22,7 @@ const createList = async (req, res, next) => {
     await list.save()
         .then(re => res.json(re))
         .catch(() => {
-            let error = errorHandler(res, 409, "Can't create list at the moment");
+            let error = errorHandler(res, 400, "Can't create list at the moment");
 
             return next(error);
         })
@@ -34,6 +34,12 @@ const editList = async (req, res, next) => {
 
     let isExistingTitle = await List.findOne({ title });
 
+    if (!isExistingTitle) {
+        let error = errorHandler(res, 400, "No such list");
+
+        return next(error);
+    }
+
     if (isExistingTitle._id != id) {
         let error = errorHandler(res, 409, "List with that title already exists!");
 
@@ -43,7 +49,7 @@ const editList = async (req, res, next) => {
     await List.findByIdAndUpdate(id, { title: title, products: products })
         .then(re => res.json(re))
         .catch(() => {
-            let error = errorHandler(res, 409, "Can't update list at the moment");
+            let error = errorHandler(res, 400, "No such list");
 
             return next(error);
         })
@@ -55,7 +61,7 @@ const deleteList = async (req, res, next) => {
     await List.findByIdAndDelete(id)
         .then(res.json({ success: true }))
         .catch(() => {
-            let error = errorHandler(res, 409, "Can't delete list at the moment");
+            let error = errorHandler(res, 400, "No such list");
 
             return next(error);
         })
@@ -76,10 +82,9 @@ const getProductsByDate = async (req, res, next) => {
         { $group: { _id: "$products.name", total: { $sum: "$products.sum"} } }
         //group elements if product name is same, sum their sum
     ])
-        .then(products => res.json(products))
+        .then(response => res.json(response))
         .catch((err) => {
-            console.log(err)
-            let error = errorHandler(res, 409, "Can't find list at the moment");
+            let error = errorHandler(res, 400, "Can't find list at the moment");
 
             return next(error);
         })
